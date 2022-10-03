@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kaniko-build-2
+spec:
+  containers:
+  - name: git-clone
+    image: alpine
+    command: ["sh", "-c"]
+    args: 
+    - |
+      apk add --no-cache git &&
+      git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/jkhelil/kaniko /workspace &&
+      sleep 3600
+    envFrom:
+    - secretRef:
+        name: github-cred
+    volumeMounts:
+    - name: workspace
+      mountPath: /workspace
+  volumes:
+  - name: kaniko-secret
+    secret:
+      secretName: regcred
+      items:
+        - key: .dockerconfigjson
+          path: config.json
+  - name: workspace
+    emptyDir: {}
